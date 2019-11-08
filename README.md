@@ -40,11 +40,19 @@ Demonstrate your understanding of this week's concepts by answering the followin
 
 - [ ] Explain the difference between `Relational Databases` and `SQL`.
 
+  Relational DB are databases that are connected by tables, SQL is the language used to write the queries in a DB
+
 - [ ] Why do tables need a `primary key`?
+
+  a PK is used to to identify records in a table
 
 - [ ] What is the name given to a table column that references the primary key on another table.
 
+  foreign key field
+
 - [ ] What do we need in order to have a _many to many_ relationship between two tables.
+
+the .join() keyword
 
 ## Minimum Viable Product
 
