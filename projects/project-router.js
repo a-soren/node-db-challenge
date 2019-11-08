@@ -1,113 +1,58 @@
 const express = require('express');
-const db = require('../data/dbconfig.js');
+
+const router = express.Router();
+
 const Projects = require('./project-model.js');
 
-const router = express.router();
-
-
-router.get('/', (req,res) => {
-    Projects.find()
-    .then(projects => {
-        res.json(projects);
-    })
-    .catch( err => {
-        res.status(500).json({
-            message: 'Failed to get the Projects'
-        });
+router.get('/', (req, res) => {
+  Projects.find()
+  .then(projects => {
+    projects = projects.map((project) => {
+      return {
+        ...project,
+        completed: !!project.completed
+      }
     });
-});
+    res.status(200).json(projects)
+  })
+  .catch((error) => {
+    console.log(error);
+    res.status(500).json({message: 'The projects could not be retrieved.'})
+  })
+})
 
-router.get('/:id', (req,res) => {
-    const {id} =req.params;
-    
-    Projects.findById(id)
-    .then(project => {
-        if(project){
-            res.json(project);
-        } else {
-            res.status(404).json({
-                message:'Could not find a project with that ID'
-            });
-        }
-    })
-    .catch(err => {
-        res.status(500).json({
-            message:'Failed to get project'
-        });
-    });
-});
+router.get('/:id/resources', (req, res) => { 
+  Projects.findResource(req.params.id)
+  .then(resources => {
+    res.status(200).json(resources)
+  })
+  .catch((error) => {
+    console.log(error)
+    res.status(500).json({message: 'The resources could not be retrieved.'})
+  })
+})
 
 router.post('/', (req, res) => {
-    Projects.add()
+  Projects.insert(req.body)
+  .then(project => {
+    project.completed = !!project.completed
+    res.status(201).json(project)
+  })
+  .catch((error) => {
+    console.log(error)
+    res.status(500).json({message: 'The project could not be created.'})
+  })
+})
 
-    .then(ids => {
-        res.status(201).json({
-            created: ids[0]
-        });
+router.post('/:id/resources', (req, res) => {
+  Projects.insertResource(req.params.id, req.body)
+    .then(resource => {
+      res.status(201).json(resource)
     })
-    .catch(error => {
-        res.status(500).json({
-            message:'failed to create new project'
-        });
-    });
-});
-
-router.put('/:id', (req, res) => {
-    const {id} =req.params;
-
-    Projects.update()
-
-    .then(count => {
-        if (count){
-            res.json({
-                update: count
-            });
-        } else {
-            res.status(404).json({
-                message:'Could not find user with that ID'
-            });
-        }
-    })
-    .catch(error => {
-        res.status(500).json({
-            message:'Failed to update that Project'
-        })
+    .catch((error) => {
+      console.log(error)
+      res.status(500).json({message: 'The resource could not be created.'})
     })
 })
 
-router.delete('/:id', (req,res) => {
-    const {id}=req.params;
-
-    Projects.remove()
-
-    .then(count => {
-        if (count){
-            res.json({removed: count});
-        } else {
-            res.status(404).json({message:'Could not find that project'});
-        }
-    })
-    .catch(error => {
-        res.status(500).json({
-            message:'Failed to delete that project'
-        });
-    });
-});
-
-router.get('/:id/resources', (req,res) => {
-    db
-    .select()
-    .from()
-    .join()
-
-    .then(resources => {
-        res.status(200).json(resources)
-    })
-    .catch(error => {
-        res.status(500).json({
-            error:`could not get resources with project id: ${id}`
-        });
-    });
-});
-
-module.exports =router;
+module.exports = router;

@@ -1,43 +1,51 @@
-const db =require('../data/dbconfig.js');
+const db = require('../data/db-config.js');
 
-module.exports ={
-    find,
-    findByID,
-    add, 
-    update,
-    remove,
+module.exports = {
+  find,
+  findById,
+  findResource,
+  findResourceById,
+  insert,
+  insertResource
 }
 
-function find(){
-  return  db('projects');
-}
-
-function findByID(){
+function find() {
   return db('projects')
-    .where({ id })
-    .first();
 }
 
-function add(){
-  const userData =req.body;
-
-  return db('projects')
-    .insert(userData)
-}
-
-function update(){
-  const {id}=req.params;
-  const changes =req.body;
-
-  return db('projects')
-  .where({id})
-  .update(changes)
-}
-
-function remove(){
-  const {id}=req.params;
-
+function findById(id) {
   return db('projects')
     .where({id})
-    .del()
+    .first()
+}
+
+function insert(data) {
+  return db('projects').insert(data, 'id')
+    .then(([id]) => {
+      return findById(id)
+    })
+}
+
+function findResource(projectId) {
+  return db('resources')
+    .join('project_resources', 'resources.id', 'project_resources.resource_id')
+    .where({'project_resources.project_id': projectId})
+}
+
+function findResourceById(id) {
+  return db('resources')
+    .where(({id}))
+}
+
+function insertResource(projectId, resource) {
+  return db('resources').insert(resource)
+    .then(([id]) => {
+      return db('project_resources').insert({
+        project_id: projectId,
+        resource_id: id,
+      })
+    })
+    .catch(() => {
+      return findResourceById(id)
+    })
 }
